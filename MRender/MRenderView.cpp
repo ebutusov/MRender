@@ -1,0 +1,296 @@
+// MRenderView.cpp : implementation of the CMRenderView class
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "resource.h"
+#include "GLDrawHelper.h"
+#include "MRenderView.h"
+#include "MoleculeBuilder.h"
+
+BOOL CMRenderView::PreTranslateMessage(MSG* pMsg)
+{
+	bool redrawScene = FALSE;
+	
+
+	switch(pMsg->message)
+	{
+		case WM_KEYUP:
+			{
+				this->m_Keys[pMsg->wParam] = FALSE;
+				redrawScene = TRUE;
+				break;
+			}
+		case WM_KEYDOWN:
+			{
+				this->m_Keys[pMsg->wParam] = TRUE;
+				redrawScene = TRUE;
+				break;
+			}
+		default:
+		{
+			break;
+		}
+	}
+
+	if(redrawScene)
+	{
+		RedrawWindow();
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+BOOL
+CMRenderView::GetUpdateFlag()
+{
+	if(m_pMolecule && m_bNeedsRedraw)
+		return TRUE;
+	return FALSE;
+}
+
+void CMRenderView::OnInit()
+{
+	m_bNeedsRedraw = TRUE;
+  m_track.SetZoom(-20.0f);
+
+	// clear key flags
+	for(int i=0;i<256;i++)
+		this->m_Keys[i] = FALSE;
+
+	glClearColor(0.000f, 0.000f, 0.000f, 1.0f); //Background color
+
+	// Activate lighting and a light source
+	glMatrixMode(GL_MODELVIEW);
+	glMatrixMode(GL_PROJECTION);
+	glEnable(GL_DEPTH_TEST);
+	glShadeModel(GL_SMOOTH);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+	// TODO: dynamic light calculation should be done here
+	//static GLfloat pos[4] = {1.0f, 0.4f, 0.9f, 0.0f};
+	//static GLfloat amb[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+  //static GLfloat dif[4] = {0.8f, 0.8f, 0.8f, 1.0f};
+  //static GLfloat spc[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+	static GLfloat pos[4] = {-1.0f, 0.4f, 0.9f, 0.0f}; 
+	static GLfloat amb[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+  static GLfloat dif[4] = {0.5f, 0.5f, 0.5f, 1.0f};
+  static GLfloat spc[4] = {0.3f, 0.3f, 0.3f, 1.0f};
+  glLightfv(GL_LIGHT0, GL_POSITION, pos);
+  glLightfv(GL_LIGHT0, GL_AMBIENT,  amb);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE,  dif);
+  //glLightfv(GL_LIGHT0, GL_SPECULAR, spc);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHTING);
+
+	// blending, anyone?
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	//glEnable(GL_BLEND);
+	//glDisable(GL_DEPTH_TEST);
+
+
+	// font display list
+	HFONT newFont = CreateFont(-14, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
+			ANSI_CHARSET, 0, 0,
+			ANTIALIASED_QUALITY, 0, "Verdana");
+	
+	if(!newFont)
+		MessageBox("Cannot create font!", "Error", MB_OK|MB_ICONERROR);
+	else
+	{
+		CDC dc(this->GetDC());
+		dc.SelectFont(newFont);
+		//HFONT oldFont = (HFONT)SelectObject(this->GetDC(), newFont);
+		GLuint base = glGenLists(96);
+		wglUseFontBitmaps(dc.m_hDC, 32, 96, font_base);
+	}
+	//SelectObject(this->GetDC(), oldFont);
+	//DeleteObject(newFont);
+
+	// Define material parameters
+	//static GLfloat glfMatAmbient[] = {0.1f, 0.1f, 0.1f, 1.0f};
+	//static GLfloat glfMatDiffuse[] = {0.5f, 0.5f, 0.580f, 1.0f};
+	//static GLfloat glfMatSpecular[]= {1.000f, 1.000f, 1.000f, 1.0f};
+	//static GLfloat glfMatEmission[]= {0.000f, 0.000f, 0.000f, 1.0f};
+	//static GLfloat fShininess = 128.000f;
+	//static GLfloat fShininess = 20.0f;
+	// Set material parameters
+	//glMaterialfv(GL_FRONT, GL_AMBIENT,  glfMatAmbient);
+	//glMaterialfv(GL_FRONT, GL_DIFFUSE,  glfMatDiffuse);
+	//glMaterialfv(GL_FRONT, GL_SPECULAR, glfMatSpecular);
+	//glMaterialfv(GL_FRONT, GL_EMISSION, glfMatEmission);
+	//glMaterialf(GL_FRONT, GL_SHININESS, fShininess);
+
+	//CMoleculeBuilder builder;
+	//m_pMolecule = builder.LoadFromFile("nicotine.pdb");
+	//if(m_pMolecule != NULL)
+	//	m_pMolecule->EnableLinks(TRUE);
+	//else
+	//	MessageBox("Failed to load molecule!", "ERROR", MB_OK);
+}
+
+BOOL CMRenderView::OnIdle()
+{
+	static bool reverse_angle = TRUE;
+	RedrawWindow();
+	return FALSE;
+}
+
+
+LRESULT CMRenderView::OnLButtonDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+  this->SetFocus();
+  ::SetCapture(this->m_hWnd);
+  int x = GET_X_LPARAM(lParam);
+  int y = GET_Y_LPARAM(lParam);
+  m_track.StartTracking(x, y);
+  bHandled = TRUE;
+  return 0;
+}
+LRESULT CMRenderView::OnLButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+  m_track.EndTracking();
+  ::ReleaseCapture();
+  bHandled = TRUE;
+  return 0;
+}
+
+LRESULT CMRenderView::OnMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+
+	int x_pos = GET_X_LPARAM(lParam);
+	int y_pos = GET_Y_LPARAM(lParam);
+  if (m_track.DoTracking(x_pos, y_pos))
+    RedrawWindow();
+	bHandled = TRUE;
+	return 0;
+}
+
+LRESULT CMRenderView::OnMouseWheel(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+	m_track.DoZoom(zDelta / 100.0f);
+	RedrawWindow();
+	bHandled = TRUE;
+	return 0;
+}
+
+void
+CMRenderView::LoadMolecule(LPCTSTR filename)
+{
+	if(m_pMolecule != NULL)
+	{
+		delete m_pMolecule;
+		m_pMolecule = NULL;
+	}
+	CMoleculeBuilder builder;
+	m_pMolecule = builder.LoadFromFile(filename);
+	if(m_pMolecule == NULL)
+	{
+		MessageBox("Failed to load molecule!", "Error", MB_OK | MB_ICONERROR);
+	}
+	else
+	{
+		m_pMolecule->EnableLinks(m_bShowLinks);
+		RedrawWindow();
+	}
+}
+
+void
+CMRenderView::Clear()
+{
+	if(m_pMolecule != NULL)
+	{
+		delete m_pMolecule;
+		m_pMolecule = NULL;
+		RedrawWindow();
+	}
+}
+
+void
+CMRenderView::SetShowLinks(BOOL enable)
+{
+	if(m_pMolecule && enable != m_bShowLinks)
+	{
+		m_bShowLinks = enable;
+		m_pMolecule->EnableLinks(enable);
+		RedrawWindow();
+	}
+}
+
+LRESULT CMRenderView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+{
+	// register object for message filtering and idle updates
+	m_pMolecule = NULL;
+	bHandled = FALSE;	// pass msg to the base class (chained)
+	return 0;
+}
+
+void
+DrawSphere(GLfloat x, GLfloat y, GLfloat z, GLfloat diameter, BOOL wireframe)
+{
+	glPushMatrix();
+	glTranslatef(x, y, z);
+	glScalef(diameter, diameter, diameter);
+	CGLDrawHelper::DrawSphere(12,24, wireframe);
+	glPopMatrix();
+}
+
+void
+DrawTube(GLfloat x1, GLfloat y1, GLfloat z1, 
+				 GLfloat x2, GLfloat y2, GLfloat z2,
+				 GLfloat diameter, bool wire)
+{
+	CGLDrawHelper::DrawTube(x1, y1, z1, x2, y2, z2, diameter, 0.0f, 30, TRUE, FALSE, wire);
+}
+
+void
+SetItemColor(GLfloat r, GLfloat g, GLfloat b, GLfloat alpha)
+{
+	static GLfloat col[4];
+	col[0] = r; col[1] = g; col[2] = b; col[3] = alpha;
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, col); 
+}
+
+void CMRenderView::OnRender()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear buffers
+  glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity(); // Load identity matrix
+
+	if(m_pMolecule != NULL)
+	{
+    glLoadMatrixf(m_track.GetMatrix());
+    GLfloat retMatrix[16];
+		m_pMolecule->DrawYourself();
+		RECT rect;
+    this->GetClientRect(&rect);
+		glColor3f(1.0f, 0.3f, 0.5f);
+		CGLDrawHelper::DrawString(font_base, 0, rect.top-rect.bottom, -0.99f, -0.93f,
+			m_pMolecule->GetDescription());
+	}
+	glFlush();
+	m_bNeedsRedraw = FALSE;
+}
+
+void CMRenderView::OnResize(int cx, int cy) 
+{
+	GLfloat fFovy  = 45.0f; // Field-of-view
+	GLfloat fZNear = 1.0f;  // Near clipping plane
+	GLfloat fZFar = 100.0f;  // Far clipping plane
+
+	// Calculate viewport aspect
+	RECT rc;
+	GetClientRect(&rc);
+
+	GLfloat fAspect = (GLfloat)(rc.right-rc.left) / (GLfloat)(rc.bottom-rc.top);
+
+	// Define viewport
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(fFovy, fAspect, fZNear, fZFar);
+	glViewport(rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top);
+	glMatrixMode(GL_MODELVIEW);
+}
+
