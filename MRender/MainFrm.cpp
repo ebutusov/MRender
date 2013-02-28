@@ -63,16 +63,19 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UpdateLayout();
 	m_wndVertSplit.SetSplitterPos(150);
 
-	m_TreeView.SetBkColor(RGB(200, 180, 200));
-	m_TreeView.SetLineColor(RGB(0, 0, 255));
-	m_TreeView.SetTextColor(RGB(255, 255, 255));
-	m_TreeView.SetLineColor(RGB(0, 0, 0));
+	//m_TreeView.SetBkColor(RGB(255, 255, 255));
+	//m_TreeView.SetLineColor(RGB(0, 0, 255));
+	//m_TreeView.SetTextColor(RGB(255, 255, 255));
+	//m_TreeView.SetLineColor(RGB(0, 0, 0));
 	m_TreeView.FillTree("molecules");
 
 	UIAddToolBar(hWndToolBar);
 	UISetCheck(ID_VIEW_TOOLBAR, 1);
 	UISetCheck(ID_VIEW_STATUS_BAR, 1);
 	UISetCheck(ID_VIEW_LINKS, 1);
+	m_view.SetShowLinks(true);
+	UISetCheck(ID_VIEW_LABELS, 0);
+	m_view.SetShowLabels(false);
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -119,12 +122,24 @@ LRESULT CMainFrame::OnFileOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	return 0;
 }
 
+LRESULT CMainFrame::OnViewShowLabels(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
+{
+	bool showLabels = m_view.GetShowLabels();
+	showLabels = !showLabels;
+	m_view.SetShowLabels(showLabels);
+	UISetCheck(ID_VIEW_LABELS, showLabels);
+	UpdateLayout();
+	bHandled = TRUE;
+	return 0;
+}
+
+
 LRESULT CMainFrame::OnViewShowLinks(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
-	static BOOL bShowLinks = TRUE;
-	bShowLinks = !bShowLinks;
-	m_view.SetShowLinks(bShowLinks);
-	UISetCheck(ID_VIEW_LINKS, bShowLinks);
+	bool showLinks = m_view.GetShowLinks();
+	showLinks = !showLinks;
+	m_view.SetShowLinks(showLinks);
+	UISetCheck(ID_VIEW_LINKS, showLinks);
 	UpdateLayout();
 	bHandled = TRUE;
 	return 0;

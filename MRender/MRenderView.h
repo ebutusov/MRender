@@ -12,17 +12,20 @@ class CMRenderView : public CWindowImpl<CMRenderView>, COpenGL<CMRenderView>, CU
 {
 
 private:
-	GLuint font_base;
+	GLuint m_font_base;
+	LONG m_lTextHeight;
 
 	BOOL m_Keys[256];
 
 	CMolecule *m_pMolecule;
-	BOOL m_bShowLinks;
+	BOOL m_bShowLinks, m_bShowLabels;
 
   CTrackball m_track;
 
 public:
 	DECLARE_WND_CLASS(NULL)
+
+	CMRenderView();
 
 	BOOL PreTranslateMessage(MSG* pMsg);
 	BOOL OnIdle();
@@ -30,6 +33,9 @@ public:
 	void OnRender();
 	void OnResize(int cx, int cy);
 	void LoadMolecule(LPCTSTR filename);
+
+	void SetShowLabels(BOOL enable);
+	BOOL GetShowLabels() { return m_bShowLabels; }
 
 	void SetShowLinks(BOOL enable);
 	BOOL GetShowLinks() { return m_bShowLinks; }
