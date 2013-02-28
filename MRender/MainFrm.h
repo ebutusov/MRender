@@ -29,6 +29,7 @@ public:
 		UPDATE_ELEMENT(ID_VIEW_TOOLBAR, UPDUI_MENUPOPUP)
 		UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
 		UPDATE_ELEMENT(ID_VIEW_LINKS, UPDUI_MENUPOPUP)
+		UPDATE_ELEMENT(ID_VIEW_LABELS, UPDUI_MENUPOPUP)
 	END_UPDATE_UI_MAP()
 
 	BEGIN_MSG_MAP(CMainFrame)
@@ -39,6 +40,7 @@ public:
 		COMMAND_ID_HANDLER(ID_VIEW_TOOLBAR, OnViewToolBar)
 		COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 		COMMAND_ID_HANDLER(ID_VIEW_LINKS, OnViewShowLinks)
+		COMMAND_ID_HANDLER(ID_VIEW_LABELS, OnViewShowLabels)
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		NOTIFY_CODE_HANDLER(TVN_SELCHANGED, OnTreeSelChanged)
 		REFLECT_NOTIFICATIONS()
@@ -57,6 +59,7 @@ private:
 	LRESULT OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnFileOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewShowLinks(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnViewShowLabels(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

@@ -2,18 +2,9 @@
 #include "FileTree.h"
 #include "resource.h"
 
-CFileTree::CFileTree(void)
-{
-}
-
-CFileTree::~CFileTree(void)
-{
-}
-
 /// Callback for tree items sorting.
 template<class T>
-int CALLBACK
-_TVICompareProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+int CALLBACK _TVICompareProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
 	CString text1, text2;
 	T* tvc = (T*)lParamSort;
@@ -28,8 +19,7 @@ _TVICompareProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 	return _tcscmp(text1, text2);
 }
 
-LRESULT
-CFileTree::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+LRESULT CFileTree::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	m_ImageList.Create(IDB_FILELIST, 18, 0, RGB(255,0,255));
 	bHandled = FALSE;		// base class will do the rest
@@ -42,30 +32,27 @@ LRESULT CFileTree::OnItemExpanding(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 {
 	NMTREEVIEW *nmt = (LPNMTREEVIEW)pnmh;
 	if(nmt->action & TVE_EXPAND)
-		this->SetItemImage(nmt->itemNew.hItem, 1, 1);
+		SetItemImage(nmt->itemNew.hItem, 1, 1);
 	else
-		this->SetItemImage(nmt->itemNew.hItem, 0, 0);
+		SetItemImage(nmt->itemNew.hItem, 0, 0);
 	bHandled = TRUE;
 	return TRUE;
 }
 
-void
-CFileTree::FillTree(LPCTSTR startDir)
+void CFileTree::FillTree(LPCTSTR startDir)
 {
-	this->SetImageList(m_ImageList.m_hImageList);
+	SetImageList(m_ImageList.m_hImageList);
 	CFindFile finder;
 	ProcessDir(startDir, TVI_ROOT);
 	TVSORTCB tvs;
 	tvs.hParent = NULL;
 	tvs.lParam = (LPARAM)static_cast<CFileTree *>(this);		// 5#337
 	tvs.lpfnCompare = ::_TVICompareProc<CFileTree>;
-	this->SortChildrenCB(&tvs, FALSE);
-	//this->SortChildren(TVI_ROOT, TRUE);
+	SortChildrenCB(&tvs, FALSE);
 }
 
 /// Recursively process directory.
-void
-CFileTree::ProcessDir(LPCTSTR dir, HTREEITEM item)
+void CFileTree::ProcessDir(LPCTSTR dir, HTREEITEM item)
 {
 	CFindFile finder;
 	CString pattern;

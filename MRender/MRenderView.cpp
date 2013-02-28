@@ -8,6 +8,14 @@
 #include "MRenderView.h"
 #include "MoleculeBuilder.h"
 
+CMRenderView::CMRenderView()
+	: m_font_base(0),
+	m_pMolecule(NULL),
+	m_bShowLinks(false),
+	m_bShowLabels(false)
+{
+}
+
 BOOL CMRenderView::PreTranslateMessage(MSG* pMsg)
 {
 	bool redrawScene = FALSE;
@@ -101,9 +109,16 @@ void CMRenderView::OnInit()
 	{
 		CDC dc(this->GetDC());
 		dc.SelectFont(newFont);
+		TEXTMETRIC tm;
+		BOOL ok = GetTextMetrics(dc.m_hDC, &tm);
+		if(ok)
+			m_lTextHeight = tm.tmHeight;
+		else
+			m_lTextHeight = 0;
 		//HFONT oldFont = (HFONT)SelectObject(this->GetDC(), newFont);
-		GLuint base = glGenLists(96);
-		wglUseFontBitmaps(dc.m_hDC, 32, 96, font_base);
+		//GLuint base = glGenLists(96);
+		m_font_base = 1000;
+		wglUseFontBitmaps(dc.m_hDC, 0, 255, m_font_base);
 	}
 	//SelectObject(this->GetDC(), oldFont);
 	//DeleteObject(newFont);
@@ -193,6 +208,9 @@ CMRenderView::LoadMolecule(LPCTSTR filename)
 	else
 	{
 		m_pMolecule->EnableLinks(m_bShowLinks);
+		m_pMolecule->SetFontList(m_font_base);
+		m_pMolecule->EnableLabels(m_bShowLabels);
+		m_pMolecule->GenerateFormula();
 		RedrawWindow();
 	}
 }
@@ -208,15 +226,24 @@ CMRenderView::Clear()
 	}
 }
 
-void
-CMRenderView::SetShowLinks(BOOL enable)
+void CMRenderView::SetShowLinks(BOOL enable)
 {
-	if(m_pMolecule && enable != m_bShowLinks)
+	if(m_pMolecule)
 	{
-		m_bShowLinks = enable;
 		m_pMolecule->EnableLinks(enable);
 		RedrawWindow();
 	}
+	m_bShowLinks = enable;
+}
+
+void CMRenderView::SetShowLabels(BOOL enable)
+{
+	if(m_pMolecule)
+	{
+		m_pMolecule->EnableLabels(enable);
+		RedrawWindow();
+	}
+	m_bShowLabels = enable;
 }
 
 LRESULT CMRenderView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -257,18 +284,23 @@ void CMRenderView::OnRender()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear buffers
   glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity(); // Load identity matrix
+	glLoadIdentity();
 
-	if(m_pMolecule != NULL)
+	if(m_pMolecule)
 	{
+		GLfloat tx,ty,tz;
+		m_pMolecule->GetTranslations(tx, ty, tz);
     glLoadMatrixf(m_track.GetMatrix());
-    GLfloat retMatrix[16];
-		m_pMolecule->DrawYourself();
+    glTranslatef(tx, ty, tz);
+		m_pMolecule->Draw();
 		RECT rect;
     this->GetClientRect(&rect);
 		glColor3f(1.0f, 0.3f, 0.5f);
-		CGLDrawHelper::DrawString(font_base, 0, rect.top-rect.bottom, -0.99f, -0.93f,
-			m_pMolecule->GetDescription());
+		CGLDrawHelper::DrawString(m_font_base, rect.right, rect.bottom, 
+			0.1f, (rect.bottom-rect.top) - m_lTextHeight,
+			m_pMolecule->GetDescription(), m_lTextHeight);
+		CGLDrawHelper::DrawString(m_font_base, rect.right, rect.bottom,
+			0.1f, 0.1f + m_lTextHeight/2.0f, m_pMolecule->GetFormula(), m_lTextHeight); 
 	}
 	glFlush();
 	m_bNeedsRedraw = FALSE;

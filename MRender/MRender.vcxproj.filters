@@ -98,6 +98,9 @@
     <ClInclude Include="vect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="atlopengl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="filelist.bmp">

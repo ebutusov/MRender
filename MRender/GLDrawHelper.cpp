@@ -2,12 +2,9 @@
 #include <stdlib.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
-
+#include <atlmisc.h>
+#include <memory>
 #include "GLDrawHelper.h"
-
-CGLDrawHelper::CGLDrawHelper(void)
-{
-}
 
 typedef struct { GLfloat x, y, z; } XYZ;
 
@@ -126,7 +123,7 @@ void
 CGLDrawHelper::DrawTube_INT(int faces, BOOL smooth, BOOL caps_p, BOOL wire)
 {
   int i;
-  GLfloat step = M_PI * 2 / faces;
+  GLfloat step = (GLfloat)M_PI * 2.0f / faces;
   GLfloat s2 = step/2;
   GLfloat th;
   GLfloat x, y, x0=0, y0=0;
@@ -180,9 +177,9 @@ CGLDrawHelper::DrawTube_INT(int faces, BOOL smooth, BOOL caps_p, BOOL wire)
     for (z = 0; z <= 1; z++)
       {
         glFrontFace(z == 0 ? GL_CCW : GL_CW);
-        glNormal3f(0, (z == 0 ? -1 : 1), 0);
+        glNormal3f(0.0f, (z == 0 ? -1.0f : 1.0f), 0.0f);
         glBegin(wire ? GL_LINE_LOOP : GL_TRIANGLE_FAN);
-        if (! wire) glVertex3f(0, z, 0);
+        if (! wire) glVertex3f(0.0f, z, 0.0f);
         for (i = 0, th = 0; i <= faces; i++)
           {
             GLfloat x = cos (th);
@@ -194,9 +191,86 @@ CGLDrawHelper::DrawTube_INT(int faces, BOOL smooth, BOOL caps_p, BOOL wire)
       }
 }
  
-void
-CGLDrawHelper::DrawString(GLuint font_dlist, int window_width, int window_height, GLfloat x, GLfloat y, LPTSTR string)
+// code taken from xscreensaver
+
+/* 
+	First, we translate the origin to the center of the atom.
+
+	Then we retrieve the prevailing modelview matrix (which
+	includes any rotation, wandering, and user-trackball-rolling
+	of the scene.
+
+	We set the top 3x3 cells of that matrix to be the identity
+	matrix.  This removes all rotation from the matrix, while
+	leaving the translation alone.  This has the effect of
+	leaving the prevailing coordinate system perpendicular to
+	the camera view: were we to draw a square face, it would
+	be in the plane of the screen.
+
+	Now we translate by `size' toward the viewer -- so that the
+	origin is *just in front* of the ball.
+
+	Then we draw the label text, allowing the depth buffer to
+	do its work: that way, labels on atoms will be occluded
+	properly when other atoms move in front of them.
+
+	This technique (of neutralizing rotation relative to the
+	observer, after both rotations and translations have been
+	applied) is known as "billboarding".
+	
+	(by Jamie Zawinski)
+ */
+
+void CGLDrawHelper::DrawLabel(GLuint font_base, GLfloat x, GLfloat y, GLfloat z, 
+															GLfloat size, LPCTSTR label)
 {
+	GLfloat m[4][4];
+
+	glPushAttrib(GL_LIGHTING_BIT);
+	glDisable(GL_LIGHTING);
+	glPushMatrix();
+	glTranslatef(x, y, z);               /* get matrix */
+  glGetFloatv (GL_MODELVIEW_MATRIX, &m[0][0]);  /* load rot. identity */
+  m[0][0] = 1; m[1][0] = 0; m[2][0] = 0;
+  m[0][1] = 0; m[1][1] = 1; m[2][1] = 0;
+  m[0][2] = 0; m[1][2] = 0; m[2][2] = 1;
+  glLoadIdentity();                             /* reset modelview */
+  glMultMatrixf (&m[0][0]);                     /* replace with ours */
+
+  glTranslatef (0, size / 2, size);           /* move toward camera */
+
+  glRasterPos3f (0, 0, 0);                     /* draw text here */
+
+  /* Before drawing the string, shift the origin to center
+      the text over the origin of the sphere. */
+ /* glBitmap (0, 0, 0, 0,
+            -string_width (mc->xfont1, a->label) / 2,
+            -mc->xfont1->descent,
+            NULL);*/
+
+  for (int j = 0; j < _tcslen(label); j++)
+    glCallList (font_base + (int)(label[j]));
+
+  glPopMatrix();
+	glPopAttrib();
+}
+
+void CGLDrawHelper::DrawString(GLuint font_base, int window_width, 
+															 int window_height,GLfloat x, GLfloat y, 
+															 LPCTSTR string, int text_height)
+{
+	int copy_len = _tcslen(string);
+	// nvoglnt seems to be buggy in glCallLists
+	// looks like _sometimes_ it uses 4 bytes instead of one when GL_UNSIGNED_BYTE is passed
+	// this allocates 4 times more memory than needed
+	std::unique_ptr<TCHAR[]> copy(new TCHAR[(copy_len + 1)*4]);
+	//LPTSTR copy = new TCHAR[(copy_len+1)*4];
+	LPTSTR copyptr = copy.get();
+	_tcsncpy_s(copyptr, copy_len+1, string, copy_len);
+	TCHAR delims[] = _T("\r\n|");
+	int y_pos = y;
+	TCHAR *context;
+
   glPushAttrib (GL_TRANSFORM_BIT |  /* for matrix contents */
                 GL_ENABLE_BIT);     /* for various glDisable calls */
   glDisable (GL_LIGHTING);
@@ -207,17 +281,30 @@ CGLDrawHelper::DrawString(GLuint font_dlist, int window_width, int window_height
     glPushMatrix();
     {
       glLoadIdentity();
-			glListBase(font_dlist - 32);
-			
+			//glListBase(font_dlist - 32);
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
       {
         glLoadIdentity();
-
         gluOrtho2D (0, window_width, 0, window_height);
-
-        glRasterPos2f(x, y);
-				glCallLists(_tcslen(string), GL_UNSIGNED_BYTE, string);
+				LPTSTR sp = _tcstok_s(copyptr, delims, &context);
+				int strings = 0;
+				while(sp != NULL)
+				{
+					glRasterPos2f(x, y_pos);
+					int len = _tcslen(sp);
+					glPushAttrib(GL_LIST_BIT);
+					glListBase(font_base);
+					// XXX CHECK THIS!
+#ifdef UNICODE
+					glCallLists(len, GL_UNSIGNED_SHORT, sp);
+#else
+					glCallLists(len, GL_UNSIGNED_BYTE, sp);
+#endif
+					glPopAttrib();
+					y_pos -= text_height;
+					sp = _tcstok_s(NULL, delims, &context);
+				}
       }
       glPopMatrix();
     }
@@ -225,10 +312,5 @@ CGLDrawHelper::DrawString(GLuint font_dlist, int window_width, int window_height
     glPopMatrix();
   }
   glPopAttrib();
-
   glMatrixMode(GL_MODELVIEW);
-}
-
-CGLDrawHelper::~CGLDrawHelper(void)
-{
 }

@@ -4,11 +4,8 @@
 
 class CFileTree : public CWindowImpl<CFileTree, CTreeViewCtrl>
 {
+	//DECLARE_WND_SUPERCLASS(NULL, CTreeViewCtrl::GetWndClassName()
 public:
-	//DECLARE_WND_SUPERCLASS(NULL, CTreeViewCtrl::GetWndClassName())
-	CFileTree(void);
-public:
-	virtual ~CFileTree(void);
 	void FillTree(LPCTSTR startDir);
 
 private:
