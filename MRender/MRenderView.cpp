@@ -19,8 +19,6 @@ CMRenderView::CMRenderView()
 BOOL CMRenderView::PreTranslateMessage(MSG* pMsg)
 {
 	bool redrawScene = FALSE;
-	
-
 	switch(pMsg->message)
 	{
 		case WM_KEYUP:
@@ -92,19 +90,13 @@ void CMRenderView::OnInit()
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHTING);
 
-	// blending, anyone?
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	//glEnable(GL_BLEND);
-	//glDisable(GL_DEPTH_TEST);
-
-
 	// font display list
-	HFONT newFont = CreateFont(-14, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
+	HFONT newFont = CreateFont(-18, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
 			ANSI_CHARSET, 0, 0,
-			ANTIALIASED_QUALITY, 0, "Verdana");
+			ANTIALIASED_QUALITY, 0, _T("Courier New"));
 	
 	if(!newFont)
-		MessageBox("Cannot create font!", "Error", MB_OK|MB_ICONERROR);
+		MessageBox(_T("Cannot create font!"), _T("Error"), MB_OK|MB_ICONERROR);
 	else
 	{
 		CDC dc(this->GetDC());
@@ -203,7 +195,7 @@ CMRenderView::LoadMolecule(LPCTSTR filename)
 	m_pMolecule = builder.LoadFromFile(filename);
 	if(m_pMolecule == NULL)
 	{
-		MessageBox("Failed to load molecule!", "Error", MB_OK | MB_ICONERROR);
+		MessageBox(_T("Failed to load molecule!"), _T("Error"), MB_OK | MB_ICONERROR);
 	}
 	else
 	{
@@ -295,7 +287,7 @@ void CMRenderView::OnRender()
 		m_pMolecule->Draw();
 		RECT rect;
     this->GetClientRect(&rect);
-		glColor3f(1.0f, 0.3f, 0.5f);
+		glColor3f(0.48f, 0.8f, 0.44f);
 		CGLDrawHelper::DrawString(m_font_base, rect.right, rect.bottom, 
 			0.1f, (rect.bottom-rect.top) - m_lTextHeight,
 			m_pMolecule->GetDescription(), m_lTextHeight);

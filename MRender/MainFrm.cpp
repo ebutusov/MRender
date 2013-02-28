@@ -67,7 +67,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	//m_TreeView.SetLineColor(RGB(0, 0, 255));
 	//m_TreeView.SetTextColor(RGB(255, 255, 255));
 	//m_TreeView.SetLineColor(RGB(0, 0, 0));
-	m_TreeView.FillTree("molecules");
+	m_TreeView.FillTree(_T("molecules"));
 
 	UIAddToolBar(hWndToolBar);
 	UISetCheck(ID_VIEW_TOOLBAR, 1);
@@ -92,19 +92,19 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	return 0;
 }
 
-#define _APPTITLE "MRender: "
+#define _APPTITLE _T("MRender: ")
 
 LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
 	m_view.Clear();
-	this->SetWindowTextA(_APPTITLE);
+	SetWindowText(_APPTITLE);
 	bHandled = TRUE;
 	return 0;
 }
 
 LRESULT CMainFrame::OnFileOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
-	static TCHAR filter[] = "PDB files (*.pdb)\0*.pdb\0All files (*.*)\0*.*\0\0";
+	static TCHAR filter[] = _T("PDB files (*.pdb)\0*.pdb\0All files (*.*)\0*.*\0\0");
 	CFileDialog cfd(TRUE, NULL, NULL, 4|2, filter, this->m_hWnd);
 	cfd.m_ofn.Flags |= OFN_NOCHANGEDIR;
 	if(cfd.DoModal() == IDOK)
@@ -116,7 +116,7 @@ LRESULT CMainFrame::OnFileOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		_tcsncat(title, _APPTITLE, _tcslen(_APPTITLE));
 		_tcsncat(title, cfd.m_ofn.lpstrFileTitle, _tcslen(cfd.m_ofn.lpstrFileTitle));
 		title[size] = '\0';
-		this->SetWindowTextA(title);
+		SetWindowText(title);
 	}
 	bHandled = TRUE;
 	return 0;

@@ -56,7 +56,7 @@ void CFileTree::ProcessDir(LPCTSTR dir, HTREEITEM item)
 {
 	CFindFile finder;
 	CString pattern;
-	pattern.Format("%s\\*.*", dir);
+	pattern.Format(_T("%s\\*.*"), dir);
 	if(finder.FindFile(pattern))
 	{
 		do
@@ -68,14 +68,14 @@ void CFileTree::ProcessDir(LPCTSTR dir, HTREEITEM item)
 			{
 				this->SetItemImage(it, 0, 0);		// we'll handle expanding and collapsing to set proper image
 				this->SetItemData(it, (DWORD_PTR)it);	// store item's handle as the data
-				ProcessDir((LPTSTR)(LPCSTR)finder.GetFilePath(), it);
+				ProcessDir((LPCTSTR)finder.GetFilePath(), it);
 			}
 			else
 			{
 				this->SetItemImage(it, 2, 2);
 				this->SetItemData(it, (DWORD_PTR)it);	// store item's handle as the data
 			}
-		} while(finder.FindNextFileA());
+		} while(finder.FindNextFile());
 	}
 	finder.Close();
 }
