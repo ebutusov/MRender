@@ -14,11 +14,8 @@ private:
   CMatrix m_matTranslation;
   GLfloat m_matResult[16];
   bool m_tracking;
-  //D3DXMATRIX m_matTranslation;
-  //D3DXMATRIX m_matRotation;
 public:
   CTrackball(void);
-  virtual ~CTrackball(void);
 
   void SetZoom(GLfloat zoom);
   void StartTracking(int mouse_x, int mouse_y);

@@ -67,6 +67,17 @@ public:
 		z = -z;
 	}
 
+	inline T& operator[](const int index)
+	{
+		ATLASSERT(index >= 0 && index <= 3);
+		switch(index)
+		{
+		case 0: return x;
+		case 1: return y;
+		case 2: return z;
+		}
+	}
+
 	inline Vector3d& operator+=(Vector3d &v)
 	{
 		x += v.x;

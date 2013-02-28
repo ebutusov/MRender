@@ -155,7 +155,7 @@ BOOL CMRenderView::OnIdle()
 
 LRESULT CMRenderView::OnLButtonDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-  this->SetFocus();
+  SetFocus();
   ::SetCapture(this->m_hWnd);
   int x = GET_X_LPARAM(lParam);
   int y = GET_Y_LPARAM(lParam);

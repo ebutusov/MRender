@@ -9,11 +9,6 @@ CTrackball::CTrackball(void) :
   m_tracking = false;
 }
 
-CTrackball::~CTrackball(void)
-{
-
-}
-
 void CTrackball::SetZoom(GLfloat zoom)
 {
   m_matTranslation.SetTranslationZ(zoom);
@@ -55,12 +50,21 @@ BOOL CTrackball::DoTracking(int x, int y)
   Vector3d dep(0.0f, 0.0f, 1.0f);
   Vector3d axis(0.0f, 0.0f, 0.0f);
 
+	// axis will be perpendicular to mouse and dep vectors
+	// this is our rotation axis
   axis = mouse ^ dep;
+	axis.Normalize();
+
+	// every 100 pixels is 360 degress or rotation
+  //GLfloat len = axis.Magnitude() / 100.0f;
+  GLfloat len = fabs(delta.Magnitude());
   
-  GLfloat len = axis.Magnitude() / 100.0f;
-  
-  ATLTRACE("delta_x : %f, delta_y: %f", mouse.x, mouse.y);
-  ATLTRACE("axis: x:%f  y:%f  z%f\n", axis.x, axis.y, axis.z);
+	while (len > 360.0f)
+		len -= 360.0f;
+
+  ATLTRACE("delta_x : %f, delta_y: %f\n", mouse.x, mouse.y);
+  ATLTRACE("axis: x:%f  y:%f  z:%f\n", axis.x, axis.y, axis.z, len);
+  ATLTRACE("angle: %f\n", len);
   
   m_rotation_delta.CreateFromAxisAngle(axis.x, axis.y, axis.z, len);
   
@@ -70,6 +74,7 @@ BOOL CTrackball::DoTracking(int x, int y)
 
 void CTrackball::EndTracking()
 {
-  m_rotation = m_rotation_delta * m_rotation;
+	// store current rotation state
+  m_rotation = m_quat; // m_rotation_delta * m_rotation;
   m_tracking = false;
 }
