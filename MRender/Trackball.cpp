@@ -33,8 +33,12 @@ GLfloat* CTrackball::GetMatrix()
   GLfloat m[16];
   m_quat.CreateMatrix(m);
   m_matRotation = m;
-  m_matRotation *= m_matTranslation;
-  m_matRotation.GetMatrix(m_matResult);
+	// first rotation, then translation (matrix multiplication applies these in reversed order,
+	// so this is translation * rotation)
+	// if we reverse order, i.e. res = rotation * translation, we will be rotating aroud the
+	// point we have translated
+	CMatrix ret = m_matTranslation * m_matRotation;
+	ret.GetMatrix(m_matResult);
   return (GLfloat *)&m_matResult;
 }
 
