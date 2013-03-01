@@ -232,6 +232,6 @@ typedef Vector2d<float> Vector2df;
 typedef Vector2d<double> Vector2dd;
 
 #ifdef tReal
-typedef Vector2d<tReal> Vector3dT;
+typedef Vector2d<tReal> Vector2dT;
 typedef Vector3d<tReal> Vector3dT;
 #endif
