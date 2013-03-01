@@ -43,12 +43,12 @@ BOOL CTrackball::DoTracking(int x, int y)
   if (!m_tracking)
     return false;
 
-  Vector2d delta = m_start - Vector2d(x, y);
+  Vector2df delta = m_start - Vector2df(x, y);
   delta /= 2;
 
-  Vector3d mouse(delta.x, -delta.y, 0.0f);
-  Vector3d dep(0.0f, 0.0f, 1.0f);
-  Vector3d axis(0.0f, 0.0f, 0.0f);
+  Vector3df mouse(delta.x, -delta.y, 0.0f);
+  Vector3df dep(0.0f, 0.0f, 1.0f);
+  Vector3df axis(0.0f, 0.0f, 0.0f);
 
 	// axis will be perpendicular to mouse and dep vectors
 	// this is our rotation axis

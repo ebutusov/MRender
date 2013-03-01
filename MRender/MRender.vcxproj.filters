@@ -27,9 +27,6 @@
     <ClCompile Include="GLDrawHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glQuaternion.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MainFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -68,9 +65,6 @@
     <ClInclude Include="GLDrawHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="glQuaternion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MainFrm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -95,10 +89,10 @@
     <ClInclude Include="Trackball.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vect.h">
+    <ClInclude Include="atlopengl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="atlopengl.h">
+    <ClInclude Include="Quaternion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

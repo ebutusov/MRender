@@ -1,15 +1,15 @@
 #pragma once
-#include "vect.h"
-#include "glQuaternion.h"
+#include "Vectors.h"
+#include "Quaternion.h"
 #include "Matrix.h"
 
 class CTrackball
 {
 private:
-  glQuaternion m_quat;
-  glQuaternion m_rotation_delta;
-  glQuaternion m_rotation;
-  Vector2d m_start;
+  CQuaternionf m_quat;
+  CQuaternionf m_rotation_delta;
+  CQuaternionf m_rotation;
+  Vector2df m_start;
   CMatrix m_matRotation;
   CMatrix m_matTranslation;
   GLfloat m_matResult[16];
