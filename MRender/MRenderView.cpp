@@ -283,7 +283,7 @@ void CMRenderView::DoSelect(int x, int y)
 	if (!m_pMolecule) return;
 
 	// off-line glcall, we need proper context for this
-	CGLContext ctx = CreateGLContext();
+	CGLContext ctx(m_hWnd, m_hRC);
 
 	//const char* version = (const char*)glGetString(GL_VERSION); 
 

@@ -8,7 +8,7 @@
 #include "Molecule.h"
 #include "Trackball.h"
 
-class CMRenderView : public CWindowImpl<CMRenderView>, COpenGL<CMRenderView>, CUpdateUI<CMRenderView>
+class CMRenderView : public CWindowImpl<CMRenderView>, public COpenGL<CMRenderView>, public CUpdateUI<CMRenderView>
 {
 private:
 	GLuint m_font_base;
