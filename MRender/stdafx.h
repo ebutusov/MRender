@@ -37,3 +37,14 @@ extern CAppModule _Module;
 #else
   #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
+
+template <typename T>
+class CRevert
+{
+private:
+	T& m_ref;
+	T m_val;
+public:
+	CRevert(T &t): m_ref(t), m_val(t) {}
+	~CRevert() { m_ref = m_val; }
+};

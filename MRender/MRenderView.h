@@ -10,17 +10,17 @@
 
 class CMRenderView : public CWindowImpl<CMRenderView>, COpenGL<CMRenderView>, CUpdateUI<CMRenderView>
 {
-
 private:
 	GLuint m_font_base;
 	LONG m_lTextHeight;
-
 	BOOL m_Keys[256];
-
 	CMolecule *m_pMolecule;
 	BOOL m_bShowLinks, m_bShowLabels;
-
   CTrackball m_track;
+	bool m_bPickMode;
+	GLfloat m_fAspect;
+
+	void DoSelect(int x, int y);
 
 public:
 	DECLARE_WND_CLASS(NULL)

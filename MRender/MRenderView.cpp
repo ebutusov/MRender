@@ -12,7 +12,8 @@ CMRenderView::CMRenderView()
 	: m_font_base(0),
 	m_pMolecule(NULL),
 	m_bShowLinks(false),
-	m_bShowLabels(false)
+	m_bShowLabels(false),
+	m_bPickMode(false)
 {
 }
 
@@ -157,8 +158,14 @@ LRESULT CMRenderView::OnLButtonDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 }
 LRESULT CMRenderView::OnLButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
+	int x = GET_X_LPARAM(lParam);
+  int y = GET_Y_LPARAM(lParam);
   m_track.EndTracking();
   ::ReleaseCapture();
+	CRect rect;
+	GetClientRect(&rect);
+	DoSelect(x, rect.bottom-y);
+	RedrawWindow();
   bHandled = TRUE;
   return 0;
 }
@@ -264,6 +271,56 @@ DrawTube(GLfloat x1, GLfloat y1, GLfloat z1,
 	CGLDrawHelper::DrawTube(x1, y1, z1, x2, y2, z2, diameter, 0.0f, 30, TRUE, FALSE, wire);
 }
 
+void CMRenderView::DoSelect(int x, int y)
+ {
+	CRevert<bool> rb(m_bPickMode);
+	m_bPickMode = true;
+
+	GLuint buff[64] = {0};
+	GLint hits, view[4];
+	int id;
+
+	if (!m_pMolecule) return;
+
+	// off-line glcall, we need proper context for this
+	CGLContext ctx = CreateGLContext();
+
+	//const char* version = (const char*)glGetString(GL_VERSION); 
+
+	glSelectBuffer(64, buff);
+	glGetIntegerv(GL_VIEWPORT, view);
+	glRenderMode(GL_SELECT);
+ 
+	// clear name stack
+	glInitNames();	
+ 	// push initial element onto the stack
+	glPushName(0);
+
+	// draw
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+ 	// restrict the draw to area around the cursor
+ 	gluPickMatrix(x, y, 0.3, 0.3, view);
+ 	gluPerspective(45, m_fAspect, 1.0f, 100.0f);
+ 	glMatrixMode(GL_MODELVIEW);
+	// render in picking mode 
+ 	OnRender();
+ 	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	hits = glRenderMode(GL_RENDER);
+	if (hits > 0)
+	{
+		// hits buffer is: number_of_hits|min_z|max_z|object_name|...and repeating
+		GLuint selected = buff[3];
+		m_pMolecule->SetSelected(selected);
+	}
+	else
+		m_pMolecule->SetSelected(-1);
+	glMatrixMode(GL_MODELVIEW);
+ }
+ 
+
 void
 SetItemColor(GLfloat r, GLfloat g, GLfloat b, GLfloat alpha)
 {
@@ -288,11 +345,18 @@ void CMRenderView::OnRender()
 		RECT rect;
     this->GetClientRect(&rect);
 		glColor3f(0.48f, 0.8f, 0.44f);
-		CGLDrawHelper::DrawString(m_font_base, rect.right, rect.bottom, 
-			0.1f, (rect.bottom-rect.top) - m_lTextHeight,
-			m_pMolecule->GetDescription(), m_lTextHeight);
-		CGLDrawHelper::DrawString(m_font_base, rect.right, rect.bottom,
-			0.1f, 0.1f + m_lTextHeight/2.0f, m_pMolecule->GetFormula(), m_lTextHeight); 
+
+		if (!m_bPickMode)
+		{
+			// cannot call these in pick mode because they use glOrtho, which would erase
+			// pick matrix contents (and will result in always having one last object selected
+			// regarding of where user clicked)
+			CGLDrawHelper::DrawString(m_font_base, rect.right, rect.bottom, 
+				0.1f, (rect.bottom-rect.top) - m_lTextHeight,
+				m_pMolecule->GetDescription(), m_lTextHeight);
+			CGLDrawHelper::DrawString(m_font_base, rect.right, rect.bottom,
+				0.1f, 0.1f + m_lTextHeight/2.0f, m_pMolecule->GetFormula(), m_lTextHeight); 
+		}
 	}
 	glFlush();
 	m_bNeedsRedraw = FALSE;
@@ -308,12 +372,12 @@ void CMRenderView::OnResize(int cx, int cy)
 	RECT rc;
 	GetClientRect(&rc);
 
-	GLfloat fAspect = (GLfloat)(rc.right-rc.left) / (GLfloat)(rc.bottom-rc.top);
+	m_fAspect = (GLfloat)(rc.right-rc.left) / (GLfloat)(rc.bottom-rc.top);
 
 	// Define viewport
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(fFovy, fAspect, fZNear, fZFar);
+	gluPerspective(fFovy, m_fAspect, fZNear, fZFar);
 	glViewport(rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top);
 	glMatrixMode(GL_MODELVIEW);
 }
