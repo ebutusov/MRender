@@ -92,7 +92,7 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	return 0;
 }
 
-#define _APPTITLE _T("MRender: ")
+#define _APPTITLE _T("MRender")
 
 LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
@@ -110,12 +110,8 @@ LRESULT CMainFrame::OnFileOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	if(cfd.DoModal() == IDOK)
 	{
 		m_view.LoadMolecule(cfd.m_ofn.lpstrFile);
-		int size = _tcslen(_APPTITLE) + _tcslen(cfd.m_ofn.lpstrFileTitle);
-		LPTSTR title = new TCHAR[size+1];
-		memset(title, 0, size);
-		_tcsncat(title, _APPTITLE, _tcslen(_APPTITLE));
-		_tcsncat(title, cfd.m_ofn.lpstrFileTitle, _tcslen(cfd.m_ofn.lpstrFileTitle));
-		title[size] = '\0';
+		CString title;
+		title.Format(_T("%s: %s"), _APPTITLE, cfd.m_ofn.lpstrFileTitle);
 		SetWindowText(title);
 	}
 	bHandled = TRUE;

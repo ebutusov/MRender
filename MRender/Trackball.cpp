@@ -15,8 +15,8 @@ void CTrackball::SetZoom(GLfloat zoom)
 }
 void CTrackball::StartTracking(int mx, int my)
 {
-  m_start.x = mx;
-  m_start.y = my;
+  m_start.x = static_cast<float>(mx);
+  m_start.y = static_cast<float>(my);
   m_tracking = true;
 }
 
@@ -47,7 +47,7 @@ BOOL CTrackball::DoTracking(int x, int y)
   if (!m_tracking)
     return false;
 
-  Vector2df delta = m_start - Vector2df(x, y);
+  Vector2df delta = m_start - Vector2df((float)x, (float)y);
   delta /= 2;
 
   Vector3df mouse(delta.x, -delta.y, 0.0f);

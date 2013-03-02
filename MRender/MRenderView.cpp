@@ -278,7 +278,6 @@ void CMRenderView::DoSelect(int x, int y)
 
 	GLuint buff[64] = {0};
 	GLint hits, view[4];
-	int id;
 
 	if (!m_pMolecule) return;
 
@@ -338,9 +337,10 @@ void CMRenderView::OnRender()
 	if(m_pMolecule)
 	{
 		GLfloat tx,ty,tz;
+		// reversed order of transformations (!)
 		m_pMolecule->GetTranslations(tx, ty, tz);
     glLoadMatrixf(m_track.GetMatrix());
-    glTranslatef(tx, ty, tz);
+    glTranslatef(tx, ty, tz); // translate to the center of molecule
 		m_pMolecule->Draw();
 		RECT rect;
     this->GetClientRect(&rect);
@@ -352,7 +352,7 @@ void CMRenderView::OnRender()
 			// pick matrix contents (and will result in always having one last object selected
 			// regarding of where user clicked)
 			CGLDrawHelper::DrawString(m_font_base, rect.right, rect.bottom, 
-				0.1f, (rect.bottom-rect.top) - m_lTextHeight,
+				0.1f, (GLfloat)((rect.bottom-rect.top) - m_lTextHeight),
 				m_pMolecule->GetDescription(), m_lTextHeight);
 			CGLDrawHelper::DrawString(m_font_base, rect.right, rect.bottom,
 				0.1f, 0.1f + m_lTextHeight/2.0f, m_pMolecule->GetFormula(), m_lTextHeight); 
