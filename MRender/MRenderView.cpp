@@ -19,19 +19,19 @@ CMRenderView::CMRenderView()
 
 BOOL CMRenderView::PreTranslateMessage(MSG* pMsg)
 {
-	bool redrawScene = FALSE;
+	bool redrawScene = false;
 	switch(pMsg->message)
 	{
 		case WM_KEYUP:
 			{
-				this->m_Keys[pMsg->wParam] = FALSE;
-				redrawScene = TRUE;
+				this->m_Keys[pMsg->wParam] = false;
+				redrawScene = true;
 				break;
 			}
 		case WM_KEYDOWN:
 			{
-				this->m_Keys[pMsg->wParam] = TRUE;
-				redrawScene = TRUE;
+				this->m_Keys[pMsg->wParam] = true;
+				redrawScene = true;
 				break;
 			}
 		default:
@@ -49,22 +49,21 @@ BOOL CMRenderView::PreTranslateMessage(MSG* pMsg)
 	return FALSE;
 }
 
-BOOL
-CMRenderView::GetUpdateFlag()
+bool CMRenderView::GetUpdateFlag()
 {
 	if(m_pMolecule && m_bNeedsRedraw)
-		return TRUE;
-	return FALSE;
+		return true;
+	return false;
 }
 
 void CMRenderView::OnInit()
 {
-	m_bNeedsRedraw = TRUE;
+	m_bNeedsRedraw = true;
   m_track.SetZoom(-20.0f);
 
 	// clear key flags
 	for(int i=0;i<256;i++)
-		this->m_Keys[i] = FALSE;
+		this->m_Keys[i] = false;
 
 	glClearColor(0.000f, 0.000f, 0.000f, 1.0f); //Background color
 
@@ -101,20 +100,18 @@ void CMRenderView::OnInit()
 	else
 	{
 		CDC dc(this->GetDC());
-		dc.SelectFont(newFont);
+		HFONT oldFont = dc.SelectFont(newFont);
 		TEXTMETRIC tm;
-		BOOL ok = GetTextMetrics(dc.m_hDC, &tm);
-		if(ok)
+		if(GetTextMetrics(dc.m_hDC, &tm))
 			m_lTextHeight = tm.tmHeight;
 		else
 			m_lTextHeight = 0;
-		//HFONT oldFont = (HFONT)SelectObject(this->GetDC(), newFont);
-		//GLuint base = glGenLists(96);
+
 		m_font_base = 1000;
 		wglUseFontBitmaps(dc.m_hDC, 0, 255, m_font_base);
+		dc.SelectFont(oldFont);
+		::DeleteObject(newFont);
 	}
-	//SelectObject(this->GetDC(), oldFont);
-	//DeleteObject(newFont);
 
 	// Define material parameters
 	//static GLfloat glfMatAmbient[] = {0.1f, 0.1f, 0.1f, 1.0f};
@@ -140,7 +137,6 @@ void CMRenderView::OnInit()
 
 BOOL CMRenderView::OnIdle()
 {
-	static bool reverse_angle = TRUE;
 	RedrawWindow();
 	return FALSE;
 }
@@ -190,8 +186,7 @@ LRESULT CMRenderView::OnMouseWheel(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 	return 0;
 }
 
-void
-CMRenderView::LoadMolecule(LPCTSTR filename)
+void CMRenderView::LoadMolecule(LPCTSTR filename)
 {
 	if(m_pMolecule != NULL)
 	{
@@ -214,8 +209,7 @@ CMRenderView::LoadMolecule(LPCTSTR filename)
 	}
 }
 
-void
-CMRenderView::Clear()
+void CMRenderView::Clear()
 {
 	if(m_pMolecule != NULL)
 	{
@@ -225,7 +219,7 @@ CMRenderView::Clear()
 	}
 }
 
-void CMRenderView::SetShowLinks(BOOL enable)
+void CMRenderView::SetShowLinks(bool enable)
 {
 	if(m_pMolecule)
 	{
@@ -235,7 +229,7 @@ void CMRenderView::SetShowLinks(BOOL enable)
 	m_bShowLinks = enable;
 }
 
-void CMRenderView::SetShowLabels(BOOL enable)
+void CMRenderView::SetShowLabels(bool enable)
 {
 	if(m_pMolecule)
 	{
@@ -253,8 +247,7 @@ LRESULT CMRenderView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	return 0;
 }
 
-void
-DrawSphere(GLfloat x, GLfloat y, GLfloat z, GLfloat diameter, BOOL wireframe)
+void DrawSphere(GLfloat x, GLfloat y, GLfloat z, GLfloat diameter, bool wireframe)
 {
 	glPushMatrix();
 	glTranslatef(x, y, z);
@@ -263,12 +256,11 @@ DrawSphere(GLfloat x, GLfloat y, GLfloat z, GLfloat diameter, BOOL wireframe)
 	glPopMatrix();
 }
 
-void
-DrawTube(GLfloat x1, GLfloat y1, GLfloat z1, 
+void DrawTube(GLfloat x1, GLfloat y1, GLfloat z1, 
 				 GLfloat x2, GLfloat y2, GLfloat z2,
 				 GLfloat diameter, bool wire)
 {
-	CGLDrawHelper::DrawTube(x1, y1, z1, x2, y2, z2, diameter, 0.0f, 30, TRUE, FALSE, wire);
+	CGLDrawHelper::DrawTube(x1, y1, z1, x2, y2, z2, diameter, 0.0f, 30, true, false, wire);
 }
 
 void CMRenderView::DoSelect(int x, int y)
@@ -320,14 +312,6 @@ void CMRenderView::DoSelect(int x, int y)
  }
  
 
-void
-SetItemColor(GLfloat r, GLfloat g, GLfloat b, GLfloat alpha)
-{
-	static GLfloat col[4];
-	col[0] = r; col[1] = g; col[2] = b; col[3] = alpha;
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, col); 
-}
-
 void CMRenderView::OnRender()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear buffers
@@ -359,7 +343,7 @@ void CMRenderView::OnRender()
 		}
 	}
 	glFlush();
-	m_bNeedsRedraw = FALSE;
+	m_bNeedsRedraw = false;
 }
 
 void CMRenderView::OnResize(int cx, int cy) 

@@ -11,9 +11,9 @@ class CMRenderView : public CWindowImpl<CMRenderView>, COpenGL<CMRenderView>, pu
 private:
 	GLuint m_font_base;
 	LONG m_lTextHeight;
-	BOOL m_Keys[256];
+	bool m_Keys[256];
 	CMolecule *m_pMolecule;
-	BOOL m_bShowLinks, m_bShowLabels;
+	bool m_bShowLinks, m_bShowLabels;
   CTrackball m_track;
 	bool m_bPickMode;
 	GLfloat m_fAspect;
@@ -32,13 +32,13 @@ public:
 	void OnResize(int cx, int cy);
 	void LoadMolecule(LPCTSTR filename);
 
-	void SetShowLabels(BOOL enable);
-	BOOL GetShowLabels() { return m_bShowLabels; }
+	void SetShowLabels(bool enable);
+	bool GetShowLabels() { return m_bShowLabels; }
 
-	void SetShowLinks(BOOL enable);
-	BOOL GetShowLinks() { return m_bShowLinks; }
+	void SetShowLinks(bool enable);
+	bool GetShowLinks() { return m_bShowLinks; }
 
-	BOOL m_bNeedsRedraw;
+	bool m_bNeedsRedraw;
 
 	void Clear();
 
@@ -49,7 +49,7 @@ public:
   LRESULT OnLButtonDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
   LRESULT OnLButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
-	BOOL GetUpdateFlag();
+	bool GetUpdateFlag();
 
 	BEGIN_MSG_MAP(CMRenderView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)

@@ -42,7 +42,7 @@ GLfloat* CTrackball::GetMatrix()
   return (GLfloat *)&m_matResult;
 }
 
-BOOL CTrackball::DoTracking(int x, int y)
+bool CTrackball::DoTracking(int x, int y)
 {
   if (!m_tracking)
     return false;
@@ -73,7 +73,7 @@ BOOL CTrackball::DoTracking(int x, int y)
   m_rotation_delta.CreateFromAxisAngle(axis.x, axis.y, axis.z, len);
   
   m_quat = m_rotation_delta * m_rotation;
-  return TRUE; // still tracking
+  return true; // still tracking
 }
 
 void CTrackball::EndTracking()

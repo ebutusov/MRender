@@ -16,11 +16,10 @@ private:
   bool m_tracking;
 public:
   CTrackball(void);
-
   void SetZoom(GLfloat zoom);
   void StartTracking(int mouse_x, int mouse_y);
   GLfloat* GetMatrix();
   void DoZoom(float delta);
-  BOOL DoTracking(int x, int y);
+	bool DoTracking(int x, int y);
   void EndTracking();
 };
