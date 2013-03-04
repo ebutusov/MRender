@@ -321,7 +321,10 @@ void CMRenderView::OnRender()
 	if(m_pMolecule)
 	{
 		GLfloat tx,ty,tz;
-		// reversed order of transformations (!)
+		// reversed order of transformations (think global coordinates)
+		// we first center molecule around the global origin, and then apply
+		// transformations that come from our trackball
+
 		m_pMolecule->GetTranslations(tx, ty, tz);
     glLoadMatrixf(m_track.GetMatrix());
     glTranslatef(tx, ty, tz); // translate to the center of molecule
@@ -334,7 +337,7 @@ void CMRenderView::OnRender()
 		{
 			// cannot call these in pick mode because they use glOrtho, which would erase
 			// pick matrix contents (and will result in always having one last object selected
-			// regarding of where user clicked)
+			// no matter where user clicked)
 			CGLDrawHelper::DrawString(m_font_base, rect.right, rect.bottom, 
 				0.1f, (GLfloat)((rect.bottom-rect.top) - m_lTextHeight),
 				m_pMolecule->GetDescription(), m_lTextHeight);

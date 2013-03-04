@@ -35,8 +35,19 @@ GLfloat* CTrackball::GetMatrix()
   m_matRotation = m;
 	// first rotation, then translation (matrix multiplication applies these in reversed order,
 	// so this is translation * rotation)
-	// if we reverse order, i.e. res = rotation * translation, we will be rotating aroud the
-	// point we have translated
+	// if we reverse order, i.e. res = rotation * translation, we will be rotating _translated_
+	// object around the origin
+	
+	// ok, this needs little more explaining:
+	// when we think of global fixed coordinate system, the transformations are applied
+	// in reversed order (here: rotation, then translation). the effect is that our object
+	// gets rotated (around origin), and then translated (zoom/unzoom) into -Z
+	//
+	// when we think of object's local coordinate system, the translations seems to apply
+	// in order as they appear (here: translation, then rotation). so our object gets translated
+	// to the desired point in space, and then it's rotated around it's local origin.
+	// code is the same, just a matter of how we think of it.
+
 	CMatrix ret = m_matTranslation * m_matRotation;
 	ret.GetMatrix(m_matResult);
   return (GLfloat *)&m_matResult;
