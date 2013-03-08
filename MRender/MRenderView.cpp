@@ -188,6 +188,8 @@ LRESULT CMRenderView::OnMouseWheel(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 void CMRenderView::LoadMolecule(LPCTSTR filename)
 {
+	// need context for proper creating and clearing display lists of molecule
+	CGLContext ctx(m_hWnd, m_hRC);
 	if(m_pMolecule != NULL)
 	{
 		delete m_pMolecule;
@@ -204,7 +206,6 @@ void CMRenderView::LoadMolecule(LPCTSTR filename)
 		m_pMolecule->EnableLinks(m_bShowLinks);
 		m_pMolecule->SetFontList(m_font_base);
 		m_pMolecule->EnableLabels(m_bShowLabels);
-		m_pMolecule->GenerateFormula();
 		RedrawWindow();
 	}
 }
@@ -276,7 +277,7 @@ void CMRenderView::DoSelect(int x, int y)
 	// off-line glcall, we need proper context for this
 	CGLContext ctx(m_hWnd, m_hRC);
 
-	//const char* version = (const char*)glGetString(GL_VERSION); 
+	const char* version = (const char*)glGetString(GL_VERSION); 
 
 	glSelectBuffer(64, buff);
 	glGetIntegerv(GL_VIEWPORT, view);
@@ -303,7 +304,15 @@ void CMRenderView::DoSelect(int x, int y)
 	if (hits > 0)
 	{
 		// hits buffer is: number_of_hits|min_z|max_z|object_name|...and repeating
+		GLuint min_z = buff[1]; // min_z of first object
 		GLuint selected = buff[3];
+		// select lowest min_z value (nearest object)
+		for (unsigned int i = 1;i < hits;++i)
+		{
+			GLuint mz = buff[i*4+1];
+			if (mz < min_z)
+				selected = buff[i*4+3];
+		}
 		m_pMolecule->SetSelected(selected);
 	}
 	else
